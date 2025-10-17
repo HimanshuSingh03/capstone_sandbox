@@ -1,144 +1,46 @@
-# My Look Once to Hear Demo 🎤
+# Look Once to Hear Demo Scripts
 
-This folder contains all the demo scripts to test and use your Look Once to Hear system!
+This folder provides runnable examples that sit on top of the core Look Once to Hear implementation. Use them to validate your setup and to experiment with your own recordings.
 
-## 📁 Files in this folder:
+## Files
+- `interactive_demo.py` - Command-line walkthrough that scans `demo_recordings/` for `.wav` files, guides you through speaker enrollment, and saves an enhanced mixture.
+- `personal_demo.py` - Importable helper that exposes a `PersonalDemo` class and an optional quick-demo routine for integrating the pipeline into notebooks or scripts.
 
-### 🚀 **Quick Start Files:**
+## Prerequisites
+- Install the project dependencies from the repository root.
+- Keep `../configs/tsh_cipic_only.json` and the checkpoint `../runs/tsh/best.ckpt` in place; `PersonalDemo` loads them using paths relative to this folder.
+- Place your enrollment and mixture `.wav` files under `my_demo/demo_recordings/`. Aim for 3-5 seconds of clean speech for enrollment and a longer, noisy mixture that contains the same speaker.
 
-1. **`test_demo.py`** - Test that everything works
-   ```bash
-   python test_demo.py
-   ```
-   - Verifies your system is working
-   - Uses existing test data
-   - Shows expected performance
+## Run the Interactive Demo
+1. Open a terminal, activate your Python environment, and `cd my_demo`.
+2. Execute `python interactive_demo.py`.
+3. Follow the prompts to choose the enrollment clip and the mixture. The script writes the enhanced result to `enhanced_<mixture-name>.wav` and prints quick diagnostics.
 
-2. **`interactive_demo.py`** - Easy demo with your audio files
-   ```bash
-   python interactive_demo.py
-   ```
-   - Put your audio files in this folder
-   - Guided step-by-step interface
-   - Automatically finds your audio files
+Choose this path when you want a guided experience without writing any code.
 
-### 🔧 **Advanced Files:**
-
-3. **`personal_demo.py`** - Full demo class for programming
-   ```python
-   from personal_demo import PersonalDemo
-   demo = PersonalDemo()
-   demo.enroll_speaker("target.wav")
-   results = demo.separate_target_speaker("mixture.wav", "output.wav")
-   ```
-
-4. **`realtime_demo.py`** - Real-time processing example
-   - Shows how to process audio chunks
-   - Demonstrates streaming capability
-   - Template for hardware deployment
-
-## 🎯 **How to Use:**
-
-### **Option 1: Quick Test (Recommended first)**
-```bash
-cd my_demo
-python test_demo.py
-```
-
-### **Option 2: Your Own Audio Files**
-1. Put your .wav audio files in the `demo_recordings` folder:
-   - `target_speaker.wav` (3-5 seconds of clear speech)
-   - `noisy_mixture.wav` (multiple speakers + background noise)
-
-2. Run interactive demo:
-   ```bash
-   python interactive_demo.py
-   ```
-
-3. Follow the prompts and listen to results!
-
-## 📋 **Audio File Requirements:**
-
-### **Enrollment Audio (Target Speaker):**
-- ✅ 3-5 seconds of clear speech
-- ✅ Minimal background noise
-- ✅ Good audio quality
-- ✅ Must be .wav format
-- ✅ Put in `demo_recordings/` folder
-
-### **Mixture Audio (Noisy Scene):**
-- ✅ Contains your target speaker
-- ✅ Mixed with other speakers/noise
-- ✅ Can be longer (10+ seconds)
-- ✅ More challenging = better demo!
-
-## 🎵 **Example Workflow:**
+## Use `PersonalDemo` in Python
+Import `PersonalDemo` when you prefer to control the workflow programmatically:
 
 ```python
-# 1. Load the system
 from personal_demo import PersonalDemo
-demo = PersonalDemo()
 
-# 2. "Look Once" - Enroll target speaker
-demo.enroll_speaker("demo_recordings/my_target_person.wav")
-
-# 3. "To Hear" - Extract from noisy mixture
-results = demo.separate_target_speaker("demo_recordings/party_noise.wav", "clean_output.wav")
-
-# 4. Analyze results
-demo.analyze_results(results)
+demo = PersonalDemo()  # loads the TSH model and speaker encoder
+demo.enroll_speaker("demo_recordings/my_target_speaker.wav")
+results = demo.separate_target_speaker(
+    "demo_recordings/noisy_mixture.wav",
+    "enhanced_output.wav",
+)
+analysis = demo.analyze_results(results)
 ```
 
-## 💡 **Tips for Best Results:**
+Key pieces:
+- `enroll_speaker(path)` - Extracts and stores a speaker embedding from a clean enrollment clip.
+- `separate_target_speaker(mixture_path, output_path=None)` - Runs Look Once to Hear on a mixture using the cached embedding; optionally saves the enhanced audio.
+- `analyze_results(results)` - Computes simple metrics and, when run in IPython, renders interactive audio comparisons.
 
-1. **Enrollment Audio:**
-   - Record in quiet environment
-   - Use good microphone
-   - Clear, natural speech
-   - Avoid music/effects
+Running `python personal_demo.py` from this directory prints the same instructions and can attempt a quick demo if sample data exists at `../data/MixLibriSpeech/...`.
 
-2. **Mixture Audio:**
-   - Target speaker should be audible
-   - Multiple speakers works better
-   - Binaural/stereo preferred
-   - Real-world scenarios
-
-3. **Performance:**
-   - Expect 5-15 dB improvement
-   - Speaker similarity: 80-95%
-   - Works with ANY speaker
-   - No retraining needed
-
-## 🔧 **Troubleshooting:**
-
-### **"Import Error"**
-- Make sure you're in the `my_demo` folder
-- Run: `cd my_demo` first
-
-### **"File Not Found"**
-- Put audio files in `my_demo` folder
-- Check file extensions (.wav, .mp3, etc.)
-
-### **"Poor Results"**
-- Use clearer enrollment audio
-- Ensure target speaker is in mixture
-- Try different audio files
-
-## 🎉 **What This System Can Do:**
-
-- ✅ **Any Speaker**: Works with voices never heard before
-- ✅ **Real-time**: Process audio in 8ms chunks
-- ✅ **High Quality**: Research-grade speech enhancement
-- ✅ **Spatial Audio**: Preserves binaural characteristics
-- ✅ **Mobile Ready**: Optimized for deployment
-
-## 📚 **Next Steps:**
-
-1. **Test with provided data**: `python test_demo.py`
-2. **Try your own audio**: `python interactive_demo.py` 
-3. **Experiment with code**: Import `PersonalDemo` class
-4. **Deploy on hardware**: Use `realtime_demo.py` as template
-
----
-
-**🏆 You now have a working implementation of CHI 2024 Best Paper Honorable Mention research!**
+## Tips
+- Keep enrollment recordings quiet and close-mic'd; the cleaner the enrollment, the better the separation.
+- Stereo mixtures provide stronger cues. Mono files are duplicated to stereo automatically, but real binaural recordings yield better results.
+- If you see import errors, make sure you launched Python from inside `my_demo` so that relative paths resolve correctly.
