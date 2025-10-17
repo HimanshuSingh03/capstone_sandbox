@@ -33,5 +33,11 @@ if __name__ == '__main__':
                         continue
                     audiofile_path = os.path.join(chapter_dir, audiofile)
                     out_path = os.path.join(out_dir, audiofile)
-                    rel_path = os.path.join('..', '..', '..', audiofile_path)
-                    os.symlink(rel_path, out_path)
+                    abs_src = os.path.abspath(os.path.join(args.root_dir, audiofile_path))
+                    abs_dst = os.path.abspath(out_path)
+                    try:
+                        os.link(abs_src, abs_dst)  # Create hard link
+                    except OSError:
+                        # Fallback to copy if hard link fails
+                        import shutil
+                        shutil.copy2(abs_src, abs_dst)

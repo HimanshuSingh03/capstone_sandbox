@@ -118,7 +118,7 @@ def run(args, device):
     else:
         raise ValueError(f'Invalid dataset: {args.dset}')
     dl_iter = iter(torch.utils.data.DataLoader(
-        ds, batch_size=4, shuffle=False, num_workers=16))
+        ds, batch_size=1, shuffle=False, num_workers=0))
 
     results = []
     for i, (inputs, targets) in enumerate(tqdm(dl_iter)):
@@ -175,7 +175,7 @@ if __name__ == '__main__':
     device = torch.device(f'cuda:{args.device}') if torch.cuda.is_available() else 'cpu'
 
     config = {
-        'config': 'configs/tsh.json',
+        'config': 'configs/tsh_cipic_only.json',
         'run_dir': 'runs/tsh',
         'enroll_config': 'configs/embed.json',
         'enroll_run_dir': 'runs/embed'

@@ -146,7 +146,7 @@ class MixLibriSpeechNoisyEnroll(Dataset):
     def _get_dvector_embedding(self, filename):
         spk_id = filename.split('-')[0]
         embed_map = torch.load(
-            os.path.join(self.embed_dir, f'{spk_id}.pt'), map_location='cpu')
+            os.path.join(self.embed_dir, f'{spk_id}.pt'), map_location='cpu', weights_only=False)
         return torch.from_numpy(embed_map[filename]).view(-1)
 
     def __getitem__(self, idx):
